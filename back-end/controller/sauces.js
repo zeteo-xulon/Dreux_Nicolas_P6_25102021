@@ -22,41 +22,25 @@ exports.createSauce = (req, res, next) => {
 
 exports.modifySauce = (req, res, next) => {
 	const sauceImage = req.file;
-	console.log(`
-	log of sauceImage : 
-	=========================`);
-	console.log(sauceImage);
 	if(sauceImage){
-		console.log({ _id: req.params.id });
 		Sauce.findOne({ _id: req.params.id })
 		.then((sauce) => {
-			console.log(`
-			log of sauce : 
-			=======================`);
-			console.log(sauce);
-			sauceObject = { ...JSON.parse(req.body.sauce),
-				imageUrl: `${req.protocol}://${req.get("host")}/images/${ req.file.filename }` };
-
+			sauceObject = { 
+				...JSON.parse(req.body.sauce),
+				imageUrl: `${req.protocol}://${req.get("host")}/images/${ req.file.filename }` 
+			};
 			const imageName = sauce.imageUrl.split("/images/")[1];
-			console.log(`
-			log of imageName : : 
-			=======================`);
-			console.log(imageName);
-			fs.unlink('../images/' + imageName );	
-			Sauce.updateOne( { _id: req.params.id }, { ...sauceImage, _id: req.params.id } )
-			.then((e) =>	{
-				console.log(`
-				log of e : 
-				=======================`);
-				console.log(e);
-				res.status(200).json({ message: "Sauce updated successfully!" })
+			fs.unlink(`images/${imageName}`, () =>{
+				Sauce.updateOne( { _id: req.params.id }, { ...sauceObject, _id: req.params.id } )
+				.then(() =>	{ res.status(200).json({ message: "Sauce updated successfully!" })})
+				.catch((error) => res.status(400).json({ error }))});
 			})
-			.catch((error) => res.status(400).json({ error }));
-		})
 		.catch((error) => res.status(500).json({ error }));
-	};
-	
-	
+	} else {
+		Sauce.updateOne( { _id: req.params.id }, { ...req.body, _id: req.params.id } )
+		.then(() =>	{ res.status(200).json({ message: "Sauce updated successfully!" })})
+		.catch((error) => res.status(400).json({ error }))
+	}
 };
 
 //----------------------------------------------------------------------------------------------
