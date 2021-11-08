@@ -5,8 +5,7 @@
 	"name": "back-end",
 	"version": "1.0.0",
 	"main": "server.js",
-	"devDependencies": {},
-	"author": "",
+	"author": "zeteo",
 	"license": "ISC",
 	"description": "",
 	"dependencies": {
@@ -14,7 +13,10 @@
 		"dotenv": "^10.0.0",
 		"express": "^4.17.1",
 		"helmet": "^4.6.0",
+		"jsonwebtoken": "^8.5.1",
 		"mongoose": "^6.0.12",
+		"mongoose-unique-validator": "^3.0.0",
+		"multer": "^1.4.3",
 		"node": "^17.0.1",
 		"nodemon": "^2.0.14"
 	}
