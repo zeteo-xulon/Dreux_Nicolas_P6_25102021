@@ -4,7 +4,6 @@
 
 const Sauce = require("../models/Sauce");
 const fs = require("fs");
-const { use } = require("../routes/sauce");
 
 //----------------------------------------------------------------------------------------------
 exports.createSauce = (req, res, next) => {
@@ -76,40 +75,47 @@ exports.getAllSauce = (req, res, next) => {
 		.catch((error) => res.status(400).json({ error }));
 };
 
+//----------------------------------------------------------------------------------------------
+
 exports.likeSauce = (req, res, next) => {
-	/*
-	*	Ok l'idée c'est de faire une condition ou d'abord on check l'utilisateur (userId)
-	* Ensuite, 3 if, si c'est 1 alors l'utilisateur aime, donc il ne peut pas aimer 2 fois le même produit
-	*	si c'est 0, alors l'utilisateur annule son like ou son dislike (remise a zero du compteur)
-	*	si c'est -1, alors l'utilisateur dislike, il faut checker s'il a pas déjà liker ou disliker le produit.
-	*	s'il a déjà liker ou disliker, il doit d'abord remettre a zero.
-	* les like donnent un tableau avec tout les utilisateurs qui ont liké.
-	*	Donc il faudra vérifier si l'userId est dans le tableau, par .find() par exemple.
-	*/
+	// get infos
 	console.log(req.body);
 	console.log(req.params);
-	let userId = req.body.id;
+
+	//variables
+	let userId = req.body.userId;
 	let sauceId = req.params.id;
 	let like = req.body.like;
+
+	Sauce.findOne({ _id: req.params.id })
+		.then((sauce) => {
+			console.log(sauce);
+			// let arrayLikers = sauce.usersLiked;
+			// let arrayDislikers = sauce.usersDisliked;
+			// // let arrayFindLiked = arrayLikers.find();
+
+	//conditions 
 	if(like === 1) {
-			Sauce.updateOne( { _id : sauceId }, { 
-				$inc: { like: like }, 
-				$push: { usersLiked : userId }, 
-			} )
+			Sauce.updateOne( { _id : sauceId }, { $inc: { like: like }, $push: { usersLiked : userId }, } )
 				.then(() =>	{ res.status(200).json({ message: "liked successfully!" })})
 				.catch((error) => res.status(400).json({ error }));
 		}
 		
-
 	if(like === -1) {
-		if(sauceId != userId){
-			Sauce.updateOne( { _id : sauceId }, { $inc: { like: like }, $push: { usersLiked : userId }, } )
+			Sauce.updateOne( { _id : sauceId }, { $inc: { dislike: like }, $push: { usersDisliked : userId }, } )
 				.then(() =>	{ res.status(200).json({ message: "liked successfully!" })})
 				.catch((error) => res.status(400).json({ error }));
-			}
-	}
-	if(like === 0) {
-		
 	}
 
+	if(like === 0) {
+	
+	
+		
+				// Sauce.updateOne( { _id : sauceId }, { $inc: { dislike: like }, $pull: { usersDisliked : userId }, $pull: { usersLiked : userId },} )
+				// .then(() =>	{ res.status(200).json({ message: "liked successfully!" })})
+				// .catch((error) => res.status(400).json({ error }));
+	}
+	})
+	.then(() =>	{ res.status(200).json({ message: "(dis)like reset completed" })})
+		.catch((error) => res.status(400).json({ error }));
 }
