@@ -1,13 +1,13 @@
+/*----------------------------------------------------------------
+													REQUIRE
+----------------------------------------------------------------*/
 const express = require('express');
 const helmet = require('helmet');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv').config();
-
 const path = require('path');
-
 const sauceRoutes = require('./routes/sauce');
 const userRoutes = require('./routes/user');
-const auth = require('./middleware/auth');
 
 
 

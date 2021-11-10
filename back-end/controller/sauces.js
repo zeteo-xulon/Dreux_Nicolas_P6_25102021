@@ -4,7 +4,6 @@
 
 const Sauce = require("../models/Sauce");
 const fs = require("fs");
-const { log } = require("console");
 
 //----------------------------------------------------------------------------------------------
 exports.createSauce = (req, res, next) => {
@@ -12,8 +11,9 @@ exports.createSauce = (req, res, next) => {
 	delete sauceObject._id;
 	const sauce = new Sauce({
 		...sauceObject,
+		likes: 0,
+		dislikes: 0,
 		imageUrl: `${req.protocol}://${req.get("host")}/images/${ req.file.filename }` });
-	console.log(sauce);
 	sauce.save()
 		.then(() => res.status(201).json({ message: "Objet enregistré !" }))
 		.catch((error) => res.status(400).json({ error }));
@@ -49,7 +49,6 @@ exports.modifySauce = (req, res, next) => {
 exports.deleteSauce = (req, res, next) => {
 	Sauce.findOne({ _id: req.params.id })
 		.then((sauce) => {
-			console.log(sauce);
 			const imageName = sauce.imageUrl.split("/images/")[1];
 			fs.unlink(`images/${imageName}`, () => {
 				Sauce.deleteOne({ _id: req.params.id })
@@ -81,24 +80,15 @@ exports.getAllSauce = (req, res, next) => {
 exports.likeSauce = (req, res, next) => {
 	Sauce.findOne({ _id: req.params.id })
 		.then((sauce) => {
-						// get infos
-			console.log(req.body);
-			console.log(req.params);
-
 			//variables
 			let userId = req.body.userId;
 			let sauceId = req.params.id;
 			let like = req.body.like;
 
-			console.log(sauce);
 			let arrayLikers = sauce.usersLiked;
-			console.log(arrayLikers);
 			let arrayDislikers = sauce.usersDisliked;
-			console.log(arrayDislikers);
-			let arrayFindLiked = arrayLikers.find((e) => e === userId );
-			console.log(arrayFindLiked);
-			let arrayFindDisliked = arrayDislikers.find((e) => e === userId );
-			console.log(arrayFindDisliked);
+			let arrayFindLiked =!! arrayLikers.find((e) => e === userId );
+			let arrayFindDisliked =!! arrayDislikers.find((e) => e === userId );
 
 	//conditions 
 			if(like === 1) {
@@ -114,14 +104,14 @@ exports.likeSauce = (req, res, next) => {
 			}
 
 			if(like === 0) {
-				if(arrayFindLiked != undefined) {
+				if(!arrayFindLiked) {
 						Sauce.updateOne( { _id : sauceId }, { $inc: { likes: -1 }, $pull: { usersLiked : userId } ,} )
-						.then(() =>	{ res.status(200).json({ message: "liked successfully!" })})
+						.then(() =>	{ res.status(200).json({ message: "cancel successfully!" })})
 						.catch((error) => res.status(400).json({ error }));
 				}
-				if(arrayFindDisliked != undefined) {
+				if(!arrayFindDisliked) {
 					Sauce.updateOne( { _id : sauceId }, { $inc: { dislikes: +1 }, $pull: { usersDisliked : userId }, } )
-					.then(() =>	{ res.status(200).json({ message: "liked successfully!" })})
+					.then(() =>	{ res.status(200).json({ message: "cancel successfully!" })})
 					.catch((error) => res.status(400).json({ error }));
 				}
 						
