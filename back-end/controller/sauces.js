@@ -88,7 +88,9 @@ exports.likeSauce = (req, res, next) => {
 			let arrayLikers = sauce.usersLiked;
 			let arrayDislikers = sauce.usersDisliked;
 			let arrayFindLiked =!! arrayLikers.find((e) => e === userId );
+			console.log(arrayFindLiked);
 			let arrayFindDisliked =!! arrayDislikers.find((e) => e === userId );
+			console.log(arrayFindDisliked);
 
 	//conditions 
 			if(like === 1) {
@@ -104,12 +106,12 @@ exports.likeSauce = (req, res, next) => {
 			}
 
 			if(like === 0) {
-				if(!arrayFindLiked) {
+				if(arrayFindLiked) {
 						Sauce.updateOne( { _id : sauceId }, { $inc: { likes: -1 }, $pull: { usersLiked : userId } ,} )
 						.then(() =>	{ res.status(200).json({ message: "cancel successfully!" })})
 						.catch((error) => res.status(400).json({ error }));
 				}
-				if(!arrayFindDisliked) {
+				if(arrayFindDisliked) {
 					Sauce.updateOne( { _id : sauceId }, { $inc: { dislikes: +1 }, $pull: { usersDisliked : userId }, } )
 					.then(() =>	{ res.status(200).json({ message: "cancel successfully!" })})
 					.catch((error) => res.status(400).json({ error }));

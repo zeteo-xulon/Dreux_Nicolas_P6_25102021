@@ -11,7 +11,7 @@ const userRoutes = require('./routes/user');
 
 
 
-mongoose.connect( process.env.DATABASE, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect( `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_COLLECTION}?retryWrites=true&w=majority`, { useNewUrlParser: true, useUnifiedTopology: true })
 	.then(() => console.log("Connexion à la base de données réussie !"))
 	.catch(() => console.log("Connexion à la base de données échouée !"));
 
