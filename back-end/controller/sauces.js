@@ -6,6 +6,7 @@ const Sauce = require("../models/Sauce");
 const fs = require("fs");
 
 //----------------------------------------------------------------------------------------------
+// Create a new entrie in the databse with the base info. Set like and dislike at 0.
 exports.createSauce = (req, res, next) => {
 	const sauceObject = JSON.parse(req.body.sauce);
 	delete sauceObject._id;
@@ -20,7 +21,8 @@ exports.createSauce = (req, res, next) => {
 };
 
 //----------------------------------------------------------------------------------------------
-
+// Will check if there is an illustration in the modify change, 
+// and it will delete the old one to replace by the new one.
 exports.modifySauce = (req, res, next) => {
 	const sauceImage = req.file;
 	if(sauceImage){
@@ -45,7 +47,7 @@ exports.modifySauce = (req, res, next) => {
 };
 
 //----------------------------------------------------------------------------------------------
-
+// Delete the sauce entrie from database, and the illustration at the same time.
 exports.deleteSauce = (req, res, next) => {
 	Sauce.findOne({ _id: req.params.id })
 		.then((sauce) => {
@@ -60,7 +62,7 @@ exports.deleteSauce = (req, res, next) => {
 };
 
 //----------------------------------------------------------------------------------------------
-
+// Get the selected sauce, to display it for the user.
 exports.getOneSauce = (req, res, next) => {
 	Sauce.findOne({ _id: req.params.id })
 		.then((sauce) => res.status(200).json(sauce))
@@ -68,7 +70,7 @@ exports.getOneSauce = (req, res, next) => {
 };
 
 //----------------------------------------------------------------------------------------------
-
+// Get all the sauce from the database, to display it on main page.
 exports.getAllSauce = (req, res, next) => {
 	Sauce.find()
 		.then((sauces) => res.status(200).json(sauces))
@@ -76,7 +78,7 @@ exports.getAllSauce = (req, res, next) => {
 };
 
 //----------------------------------------------------------------------------------------------
-
+// Manage to add or remove likes and dislikes depending of the user choice.
 exports.likeSauce = (req, res, next) => {
 	Sauce.findOne({ _id: req.params.id })
 		.then((sauce) => {
@@ -84,39 +86,37 @@ exports.likeSauce = (req, res, next) => {
 			let userId = req.body.userId;
 			let sauceId = req.params.id;
 			let like = req.body.like;
-
+			// Array with the users depending on their choice
 			let arrayLikers = sauce.usersLiked;
 			let arrayDislikers = sauce.usersDisliked;
-			let arrayFindLiked =!! arrayLikers.find((e) => e === userId );
-			console.log(arrayFindLiked);
-			let arrayFindDisliked =!! arrayDislikers.find((e) => e === userId );
-			console.log(arrayFindDisliked);
+			// Return true if the user liked or disliked before, else it return false.
+			let userResetLike =!! arrayLikers.find((e) => e === userId );
+			let userResetDislike =!! arrayDislikers.find((e) => e === userId );
 
-	//conditions 
+	//conditions : 1 = like, -1 = dislike, 0 = change from like of dislike to nothing.
 			if(like === 1) {
-					Sauce.updateOne( { _id : sauceId }, { $inc: { likes: parseInt(like) }, $push: { usersLiked : userId }, } )
+					Sauce.updateOne( { _id : sauceId }, { $inc: { likes: +1 }, $push: { usersLiked : userId }, } )
 						.then(() =>	{ res.status(200).json({ message: "liked successfully!" })})
 						.catch((error) => res.status(400).json({ error }));
 				}
 				
 			if(like === -1) {
-					Sauce.updateOne( { _id : sauceId }, { $inc: { dislikes: parseInt(like) }, $push: { usersDisliked : userId }, } )
+					Sauce.updateOne( { _id : sauceId }, { $inc: { dislikes: +1 }, $push: { usersDisliked : userId }, } )
 						.then(() =>	{ res.status(200).json({ message: "disliked successfully!" })})
 						.catch((error) => res.status(400).json({ error }));
 			}
 
 			if(like === 0) {
-				if(arrayFindLiked) {
+				if(userResetLike) {
 						Sauce.updateOne( { _id : sauceId }, { $inc: { likes: -1 }, $pull: { usersLiked : userId } ,} )
 						.then(() =>	{ res.status(200).json({ message: "cancel successfully!" })})
 						.catch((error) => res.status(400).json({ error }));
 				}
-				if(arrayFindDisliked) {
-					Sauce.updateOne( { _id : sauceId }, { $inc: { dislikes: +1 }, $pull: { usersDisliked : userId }, } )
+				if(userResetDislike) {
+					Sauce.updateOne( { _id : sauceId }, { $inc: { dislikes: -1 }, $pull: { usersDisliked : userId }, } )
 					.then(() =>	{ res.status(200).json({ message: "cancel successfully!" })})
 					.catch((error) => res.status(400).json({ error }));
-				}
-						
+				}			
 			}
 	})
 	.catch((error) => res.status(400).json({ error }));
